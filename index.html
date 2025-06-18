@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple Chatbot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { background: #121212; color: white; font-family: sans-serif; padding: 10px; }
+    #chatbox { height: 300px; overflow-y: scroll; background: #222; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+    .msg { margin-bottom: 8px; }
+    .user { color: cyan; }
+    .bot { color: orange; }
+    input { width: 75%; padding: 8px; }
+    button { padding: 8px; background: orange; border: none; }
+  </style>
+  <!-- Load Q&A JS -->
+  <script src="knowledgeBase.js"></script>
+</head>
+<body>
+  <h3>🤖 Chatbot</h3>
+  <div id="chatbox"></div>
+  <input id="input" placeholder="Type your question...">
+  <button onclick="send()">Send</button>
+
+  <script>
+    const chatbox = document.getElementById("chatbox");
+
+    function appendMessage(sender, text) {
+      const msg = document.createElement("div");
+      msg.className = "msg " + sender;
+      msg.textContent = `${sender === 'user' ? 'You' : 'Bot'}: ${text}`;
+      chatbox.appendChild(msg);
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    function findAnswer(userInput) {
+      const q = userInput.toLowerCase().trim();
+      const found = knowledgeBase.find(item => q.includes(item.question.toLowerCase()));
+      return found ? found.answer : "Sorry, I don’t understand that yet.";
+    }
+
+    function send() {
+      const input = document.getElementById("input");
+      const text = input.value;
+      if (!text.trim()) return;
+
+      appendMessage("user", text);
+      const reply = findAnswer(text);
+      setTimeout(() => appendMessage("bot", reply), 500);
+      input.value = "";
+    }
+  </script>
+</body>
+</html>
