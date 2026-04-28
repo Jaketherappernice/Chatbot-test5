@@ -1,0 +1,32 @@
+legal document of the day. Give me a document
+
+Legal documents formalize agreements, rights, or obligations between parties and are enforceable by law. They range from contracts and wills to affidavits and deeds, often requiring signatures or notarization for validity. [1][2]
+
+## Sample Legal Document
+Here's a basic template for a **Simple Promissory Note** (a common legal document promising to repay a debt). This is a generic example for educational purposes—customize it for your needs and consult a lawyer for enforceability, especially in the Philippines where notarization may be required.
+
+```
+PROMISSORY NOTE
+
+Date: [Insert Date, e.g., April 29, 2026]
+
+FOR VALUE RECEIVED, the undersigned, [Borrower's Full Name], of [Borrower's Address, e.g., Binangonan, Calabarzon, PH], hereinafter referred to as the "Borrower," promises to pay to the order of [Lender's Full Name], of [Lender's Address], hereinafter referred to as the "Lender," the principal sum of [Amount in Words and Figures, e.g., PHP 10,000.00 (Ten Thousand Philippine Pesos)], with interest at the rate of [Interest Rate, e.g., 5% per annum], payable as follows:
+
+- Principal and interest due on [Due Date, e.g., October 29, 2026].
+- Payments to be made at [Payment Location or Method, e.g., Lender's address or bank transfer].
+
+In the event of default, the Borrower agrees to pay all costs of collection, including reasonable attorney's fees.
+
+This note is binding upon the Borrower and successors.
+
+Borrower Signature: _______________________________     Date: ____________
+Printed Name: [Borrower's Name]
+
+Witness Signature: _______________________________   Date: ____________
+Printed Name: [Witness Name]
+
+Notary (if required): ______________________________ Date: ____________
+```
+
+This format draws from standard promissory note structures used in legal practice. [5][8] Always have it reviewed by a local attorney to comply with Philippine laws like the Civil Code. [8]
+
