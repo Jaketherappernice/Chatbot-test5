@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>AI Web Weaver | Chat-to-Website Builder</title>
+    <!-- Google Fonts for clean typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 (free icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Puter AI Script -->
+    <script src="https://js.puter.com/v2/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+
+        .canvas-container {
+            flex: 1;
+            background: white;
+            position: relative;
+            overflow: auto;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+        }
+
+        #websiteCanvas {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+            display: block;
+        }
+
+        .chat-bar-wrapper {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(0,0,0,0.1);
+            padding: 16px 24px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+
+        .chat-form {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: white;
+            border-radius: 60px;
+            padding: 6px 6px 6px 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .chat-form input {
+            flex: 1;
+            border: none;
+            padding: 14px 0;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            background: transparent;
+            outline: none;
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .chat-form input::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        .chat-form button {
+            background: #0f172a;
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .chat-form button:hover {
+            background: #1e293b;
+            transform: scale(0.97);
+        }
+
+        .chat-form button:active {
+            transform: scale(0.95);
+        }
+
+        .chat-form button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .action-buttons {
+            position: fixed;
+            top: 20px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            gap: 12px;
+        }
+
+        .copy-btn, .reset-btn {
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 40px;
+            padding: 10px 18px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #1e293b;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .copy-btn i, .reset-btn i {
+            font-size: 1rem;
+        }
+
+        .copy-btn:hover {
+            background: white;
+            border-color: #0f172a;
+            color: #0f172a;
+            transform: translateY(-2px);
+        }
+
+        .reset-btn:hover {
+            background: #fef2f2;
+            border-color: #dc2626;
+            color: #b91c1c;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172aee;
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            z-index: 1100;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast-msg {
+            position: fixed;
+            top: 80px;
+            right: 24px;
+            background: #2e7d32;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            z-index: 1200;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.2s;
+            pointer-events: none;
+            backdrop-filter: blur(4px);
+            font-family: 'Inter', sans-serif;
+        }
+
+        @media (max-width: 680px) {
+            .chat-form {
+                padding: 4px 4px 4px 18px;
+            }
+            .chat-form button span {
+                display: none;
+            }
+            .chat-form button i {
+                margin: 0;
+            }
+            .chat-form button {
+                padding: 10px 16px;
+            }
+            .action-buttons {
+                top: 12px;
+                right: 12px;
+                gap: 8px;
+            }
+            .copy-btn, .reset-btn {
+                padding: 7px 14px;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <!-- Top Right Buttons: Copy Code & Reset Canvas -->
+    <div class="action-buttons">
+        <button class="copy-btn" id="copyCodeBtn">
+            <i class="fas fa-code"></i> <span>Copy Code</span>
+        </button>
+        <button class="reset-btn" id="resetCanvasBtn">
+            <i class="fas fa-undo-alt"></i> <span>Reset</span>
+        </button>
+    </div>
+
+    <!-- Canvas: full white area shows live website preview -->
+    <div class="canvas-container">
+        <iframe id="websiteCanvas" title="live website preview" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"></iframe>
+    </div>
+
+    <!-- Chatbar: input for website idea -->
+    <div class="chat-bar-wrapper">
+        <div class="chat-form">
+            <i class="fas fa-magic" style="color:#64748b;"></i>
+            <input type="text" id="ideaInput" placeholder="Describe your website idea... e.g., 'a modern dark portfolio for a photographer with grid gallery and contact section'" autocomplete="off">
+            <button id="generateBtn">
+                <i class="fas fa-wand-magic"></i> <span>Generate</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading toast indicator -->
+    <div id="loadingToast" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <span>AI is weaving your website...</span>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // Get DOM elements
+        const iframeCanvas = document.getElementById('websiteCanvas');
+        const generateBtn = document.getElementById('generateBtn');
+        const ideaInput = document.getElementById('ideaInput');
+        const copyBtn = document.getElementById('copyCodeBtn');
+        const resetBtn = document.getElementById('resetCanvasBtn');
+        const loadingToast = document.getElementById('loadingToast');
+
+        // Helper: show/hide loading
+        function showLoading(show) {
+            if (show) {
+                loadingToast.classList.remove('hidden');
+            } else {
+                loadingToast.classList.add('hidden');
+            }
+        }
+
+        // Helper: show temporary toast
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            toast.style.backgroundColor = isError ? '#c62828' : '#2e7d32';
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}" style="margin-right:8px;"></i>${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2800);
+        }
+
+        // Function to write HTML into iframe and store code
+        function renderWebsiteToCanvas(htmlContent) {
+            if (!iframeCanvas) return;
+            const doc = iframeCanvas.contentDocument || iframeCanvas.contentWindow.document;
+            doc.open();
+            doc.write(htmlContent);
+            doc.close();
+            iframeCanvas.setAttribute('data-current-code', htmlContent);
+        }
+
+        // Default initial minimalist starter
+        function getDefaultWebsite() {
+            return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your AI Canvas</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: system-ui, -apple-system, 'Inter', sans-serif;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #1e293b;
+        }
+        .container {
+            text-align: center;
+            max-width: 600px;
+            padding: 2rem;
+        }
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #0f172a, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        p {
+            color: #475569;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+        .hint {
+            background: #f1f5f9;
+            padding: 0.75rem;
+            border-radius: 60px;
+            font-size: 0.9rem;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">✨</div>
+        <h1>AI Web Weaver</h1>
+        <p>Describe any website idea in the chat bar below — portfolio, blog, business landing, or unique concepts. AI will generate a complete, modern HTML/CSS website live on this canvas.</p>
+        <div class="hint">💡 Try: "vintage-style coffee shop homepage with menu cards" or "developer portfolio with terminal vibe"</div>
+    </div>
+</body>
+</html>`;
+        }
+
+        // Function to call Puter AI and generate website
+        async function generateWebsiteFromIdea(userPrompt) {
+            if (!userPrompt || userPrompt.trim() === "") {
+                showToast("Please describe your website idea first!", true);
+                return null;
+            }
+
+            const systemMessage = `You are an expert front-end developer and designer. Generate a complete, captivating, self-contained HTML/CSS website based on the user's request.
+            - Output ONLY valid HTML code (from <!DOCTYPE html> to </html>). No extra explanations, no markdown code fences, just pure raw HTML.
+            - The design should be fully responsive, mobile-friendly, and modern (use flex/grid, subtle shadows, rounded corners, pleasant color palette).
+            - Include inline styles within <style> tags. Use semantic HTML.
+            - Add appropriate hover effects, interactivity where relevant, but keep it elegant.
+            - Ensure the body background is white or light theme unless the idea demands dark mode.
+            - The generated website must be self-contained; include Font Awesome CDN if icons needed.
+            - If the idea requires images, use placeholder images from https://picsum.photos or similar.
+            - Write high-quality, modern, accessible HTML/CSS that showcases the requested concept.
+            - No JavaScript unless essential for subtle interactivity.
+            - Don't include any external scripts that might break.`;
+
+            try {
+                showLoading(true);
+
+                // Check if Puter AI is available
+                if (!window.puter || !window.puter.ai || !window.puter.ai.chat) {
+                    throw new Error("Puter AI not loaded. Please check your internet connection and refresh the page.");
+                }
+
+                const messages = [
+                    { role: "system", content: systemMessage },
+                    { role: "user", content: `Create a website: ${userPrompt}. Ensure it's a full stunning webpage with proper structure, headings, and content that matches the theme. Make it look professional, unique and pixel-perfect. Return ONLY the HTML code.` }
+                ];
+
+                // Call Puter AI
+                const response = await window.puter.ai.chat(messages, {
+                    model: "gpt-4o-mini",
+                    stream: false
+                });
+
+                let generatedCode = response?.message?.content || "";
+
+                if (!generatedCode) {
+                    throw new Error("Empty response from AI. Please try again.");
+                }
+
+                // Clean up the response - remove markdown code blocks if present
+                let cleanedCode = generatedCode.trim();
+
+                // Remove markdown code fences if present
+                const codeBlockRegex = /```(?:html)?\s*([\s\S]*?)\s*```/i;
+                const match = cleanedCode.match(codeBlockRegex);
+                if (match && match[1]) {
+                    cleanedCode = match[1].trim();
+                }
+
+                // Remove single backtick wrapping if present
+                if (cleanedCode.startsWith("`") && cleanedCode.endsWith("`")) {
+                    cleanedCode = cleanedCode.slice(1, -1);
+                }
+
+                // Validate that we have something that looks like HTML
+                if (cleanedCode.length < 100 || !cleanedCode.toLowerCase().includes("<!doctype") && !cleanedCode.toLowerCase().includes("<html")) {
+                    throw new Error("AI didn't generate valid HTML. Please try again with a different description.");
+                }
+
+                return cleanedCode;
+
+            } catch (error) {
+                console.error("AI generation error:", error);
+                showToast(`Error: ${error.message || "Failed to generate website"}`, true);
+                return null;
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Main action: process user input, call AI, render
+        async function handleGenerate() {
+            const idea = ideaInput.value.trim();
+            if (!idea) {
+                showToast("Please enter a website idea first! ✨", true);
+                ideaInput.focus();
+                return;
+            }
+
+            // Disable button while generating
+            generateBtn.disabled = true;
+            const originalBtnHTML = generateBtn.innerHTML;
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> <span>Creating...</span>';
+
+            try {
+                const htmlCode = await generateWebsiteFromIdea(idea);
+                if (htmlCode) {
+                    renderWebsiteToCanvas(htmlCode);
+                    showToast("Website generated successfully! 🎉", false);
+                }
+            } catch (err) {
+                console.error("Unexpected error:", err);
+                showToast("An unexpected error occurred. Please try again.", true);
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = originalBtnHTML;
+            }
+        }
+
+        // Copy current website code to clipboard
+        function copyCurrentWebsiteCode() {
+            let codeToCopy = iframeCanvas.getAttribute('data-current-code');
+
+            if (!codeToCopy) {
+                try {
+                    const doc = iframeCanvas.contentDocument || iframeCanvas.contentWindow.document;
+                    if (doc && doc.documentElement) {
+                        codeToCopy = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+                    }
+                } catch (e) {
+                    console.warn("Could not read iframe content:", e);
+                    codeToCopy = getDefaultWebsite();
+                }
+            }
+
+            if (!codeToCopy) {
+                showToast("No website code available to copy.", true);
+                return;
+            }
+
+            // Try modern clipboard API first
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(codeToCopy).then(() => {
+                    showToast("Website HTML copied to clipboard! ✨");
+                }).catch(() => {
+                    fallbackCopy(codeToCopy);
+                });
+            } else {
+                fallbackCopy(codeToCopy);
+            }
+        }
+
+        // Fallback copy method
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast("Copied! You can now paste the HTML.");
+            } catch (err) {
+                showToast("Failed to copy code. Please try again.", true);
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // Reset canvas to default
+        function resetCanvas() {
+            const defaultHTML = getDefaultWebsite();
+            renderWebsiteToCanvas(defaultHTML);
+            showToast("Canvas reset to default", false);
+            ideaInput.value = "";
+            ideaInput.focus();
+        }
+
+        // Initialize canvas with default content
+        function initializeCanvas() {
+            const defaultHTML = getDefaultWebsite();
+            renderWebsiteToCanvas(defaultHTML);
+        }
+
+        // Event listeners
+        generateBtn.addEventListener('click', handleGenerate);
+        copyBtn.addEventListener('click', copyCurrentWebsiteCode);
+        resetBtn.addEventListener('click', resetCanvas);
+
+        // Allow pressing Enter in input field to generate
+        ideaInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleGenerate();
+            }
+        });
+
+        // Check if Puter AI is loaded after a short delay
+        setTimeout(() => {
+            if (!window.puter || !window.puter.ai) {
+                console.warn("Puter AI not detected. Some features may not work.");
+                showToast("AI engine is loading... If issues persist, please refresh the page.", true);
+            } else {
+                console.log("Puter AI loaded successfully!");
+            }
+        }, 2000);
+
+        // Start the application
+        initializeCanvas();
+        console.log("AI Web Weaver initialized successfully!");
+
+    })();
+</script>
+</body>
+</html>
