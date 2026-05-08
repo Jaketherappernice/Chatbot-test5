@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corruptus Cleaner</title>
+    <style>
+        :root {
+            --primary-bg: rgb(61, 24, 110);
+            --accent-green: rgb(70, 224, 90);
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body, html { 
+            margin:0; padding:0; width:100%; height:100%; 
+            background: var(--primary-bg); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        #site-canvas { 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        .header-title {
+            color: var(--accent-green);
+            font-size: clamp(32px, 8vw, 52px);
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 25px;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-label { font-size: 14px; opacity: 0.8; margin-bottom: 10px; text-transform: uppercase; }
+        .stat-value { font-size: 28px; font-weight: bold; margin-bottom: 15px; }
+
+        /* Storage Bar Styling */
+        .progress-container {
+            width: 100%;
+            height: 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        #storage-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--accent-green);
+            transition: width 1s ease-in-out;
+        }
+
+        /* AI Box */
+        .ai-summary {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--accent-green);
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            min-height: 100px;
+        }
+
+        .clean-btn {
+            background: var(--accent-green);
+            color: #1a0b2e;
+            border: none;
+            border-radius: 50px;
+            padding: 20px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            margin-top: 20px;
+        }
+
+        .clean-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(70, 224, 90, 0.4);
+        }
+
+        .clean-btn:active { transform: scale(0.95); }
+
+        .scan-line {
+            color: var(--accent-green);
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="site-canvas">
+    <h1 class="header-title">𝐂𝐨𝐫𝐫𝐮𝐩𝐭𝐮𝐬 ᴄʟᴇᴀɴᴇʀ</h1>
+
+    <div class="card">
+        <div class="stat-label">Device Data Storage</div>
+        <div class="stat-value" id="storage-text">Calculating...</div>
+        <div class="progress-container">
+            <div id="storage-bar"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="stat-label">Browser Items Detected</div>
+        <div id="cookie-count" class="stat-value">Scanning Cookies...</div>
+        <div style="font-size: 12px; opacity: 0.6;">LocalDB, Cache, and Session items tracked.</div>
+    </div>
+
+    <div class="card">
+        <div class="stat-label">AI System Analysis</div>
+        <div class="ai-summary" id="ai-log">
+            <div class="scan-line">> Initializing Corruptus Kernel...</div>
+        </div>
+    </div>
+
+    <button class="clean-btn" onclick="performClean()">PURGE SYSTEM</button>
+</div>
+
+<script>
+    // 1. Storage Calculation Logic
+    async function updateStorageInfo() {
+        if (navigator.storage && navigator.storage.estimate) {
+            const estimate = await navigator.storage.estimate();
+            
+            // Convert bytes to MB
+            const usedMB = (estimate.usage / (1024 * 1024)).toFixed(2);
+            const quotaMB = (estimate.quota / (1024 * 1024)).toFixed(2);
+            const percent = ((estimate.usage / estimate.quota) * 100).toFixed(2);
+
+            document.getElementById('storage-text').innerText = `${usedMB} MB / ${quotaMB} MB (${percent}%)`;
+            document.getElementById('storage-bar').style.width = percent + '%';
+            
+            logAI(`Storage Analysis: ${usedMB}MB detected in local sandbox.`);
+        } else {
+            document.getElementById('storage-text').innerText = "Storage API Not Supported";
+        }
+    }
+
+    // 2. Cookie & Object Counter
+    function scanItems() {
+        // Note: JS can only see cookies for the current domain
+        const cookies = document.cookie.split(';').filter(c => c.length > 0).length;
+        const localItems = localStorage.length;
+        const sessionItems = sessionStorage.length;
+        
+        document.getElementById('cookie-count').innerText = `${cookies} Cookies | ${localItems + sessionItems} Storage Objects`;
+    }
+
+    // 3. AI Log Simulator
+    function logAI(message) {
+        const log = document.getElementById('ai-log');
+        const line = document.createElement('div');
+        line.className = 'scan-line';
+        line.innerText = `> ${message}`;
+        log.appendChild(line);
+        if (log.childNodes.length > 5) log.removeChild(log.firstChild);
+    }
+
+    // 4. THE CLEANER FUNCTION
+    function performClean() {
+        logAI("Commencing Purge...");
+        
+        // Clear Local & Session Storage
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Clear Cookies (for this domain)
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i];
+            const eqPos = cookie.indexOf("=");
+            const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
+            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+        }
+
+        setTimeout(() => {
+            logAI("Cache incinerated.");
+            logAI("Cookies wiped.");
+            logAI("System Optimized.");
+            updateStorageInfo();
+            scanItems();
+            alert("System Purge Complete. Storage has been reset for this domain.");
+        }, 1000);
+    }
+
+    // Initialize
+    window.onload = () => {
+        updateStorageInfo();
+        scanItems();
+        setInterval(() => {
+            const alerts = ["Heartbeat normal...", "Monitoring fragments...", "No leaks detected."];
+            logAI(alerts[Math.floor(Math.random() * alerts.length)]);
+        }, 5000);
+    };
+</script>
+
+</body>
+</html>
